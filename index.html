@@ -14,10 +14,6 @@
 
 <script type="text/javascript" src="../include/js/d3/d3.v3.min.js"></script>
 <script type="text/javascript" src="../include/js/d3/topo/topojson.v1.min.js"></script>
-<!-- script type="text/javascript" src="../include/js/d3/topo/datamaps.world.min.js"></script -->
-<!-- script type="text/javascript" src="./help.js"></script-->
-<!-- script type="text/javascript" src="./forceit.js"></script-->
-<!-- <script type="text/javascript" src="./scatterit.js"></script-->
 
 <script type="text/javascript">
 
@@ -120,6 +116,8 @@
       .attr("cx", function(d){return(d.x_old || 0)})
       .attr("cy", function(d){return(d.y_old || 0)})
       .style("opacity", 1)
+    
+    labelize()
   }
 
   function fromgeo() {
@@ -233,9 +231,7 @@
     nodes.forEach(function(o, i) {
       var community = o.community + "" // make sure community is a string
       myComms.push(community)
-      if (o.prlead) { 
-        myCenters[community] = i
-      }
+      if (o.prlead) { myCenters[community] = i }
     })
     myComms = d3.set(myComms).values().sort()
     return myComms.length
@@ -320,11 +316,17 @@
     var node = svg.selectAll(".node")
       .data(data.nodes)
       .enter().append("circle")
-      .attr( "class", function(d){return "node" + (d.prlead ? " lead" : (d.isperson==1 ? "" : " maillist")) })
-      .attr( "r",     function(d){return d.radius })
+      .attr("class", function(d){return "node" + (d.prlead ? " lead" : (d.isperson==1 ? "" : " maillist")) })
+      .attr("r",     function(d){return d.radius })
       .style("fill",  function(d){return d.prlead ? d3.rgb(d.color).darker(2) : d3.rgb(d.color) })
       .style("stroke-width", function(d){return Math.max(d.radius/10,1)})
       .call(force.drag)
+
+    var comms = svg.selectAll(".comms")
+      .data(data.nodes)
+      data.nodes.forEach(function(node) {
+      .enter().append("rect")
+      .attr("class", "community")
       
     force.on("tick", function (e) {
       var q = d3.geom.quadtree(data.nodes)
