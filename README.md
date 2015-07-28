@@ -14,6 +14,6 @@ an exercise to show how to transition between multiple d3 coordinate systems, in
 * run `morg.py` on the json file to add (fictional/arbitrary) city locations to each node
 
 ### todo
-* create this document
-* insert community legends
-* document code
+- [x] create this document
+- [ ] insert community legends
+- [ ] document code
