@@ -324,9 +324,11 @@
 
     var comms = svg.selectAll(".comms")
       .data(data.nodes)
-      data.nodes.forEach(function(node) {
-      .enter().append("rect")
-      .attr("class", "community")
+      data.nodes.forEach(function(o,i) {
+        console.log("o: " + o + ", i: " + i)
+//      .enter().append("rect")
+//      .attr("class", "community")
+    })
       
     force.on("tick", function (e) {
       var q = d3.geom.quadtree(data.nodes)
