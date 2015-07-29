@@ -105,6 +105,7 @@
       return ret
     }
     var roids = centroids(nodes)
+    // need to wrap these two in a <g>. this is cheeseball and looks ugly.
     d3.selectAll(".label_back")
       .attr("x", function(){return roids[this.attributes.community.value + ".x"]-parseInt(this.attributes.width.value)/2})
       .attr("y", function(){return (roids[this.attributes.community.value + ".y"]-parseInt(this.attributes.height.value)+5+"px")})
