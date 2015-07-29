@@ -105,7 +105,10 @@
       return ret
     }
     var roids = centroids(nodes)
-    d3.selectAll(".community_label")
+    d3.selectAll(".label_back")
+      .attr("x", function(){return roids[this.attributes.community.value + ".x"]-parseInt(this.attributes.width.value)/2})
+      .attr("y", function(){return (roids[this.attributes.community.value + ".y"]-parseInt(this.attributes.height.value)+5+"px")})
+    d3.selectAll(".label_text")
       .attr("x", function(){return roids[this.attributes.community.value + ".x"]})
       .attr("y", function(){return roids[this.attributes.community.value + ".y"]})
     return
@@ -154,10 +157,14 @@
       .attr("cy", function(d){return(d.y_old||0)})
       .style("opacity", 1)
     labelize(data.nodes, "force")
-    d3.selectAll(".community_label")
+    d3.selectAll(".label_text")
       .transition()
       .duration(tmilli)
       .style("opacity", 1)
+    d3.selectAll(".label_back")
+      .transition()
+      .duration(tmilli)
+      .style("opacity", 0.75)
   }
 
   function fromgeo() {
@@ -387,21 +394,18 @@
       data.nodes.forEach(function(o, i) {
         //console.log("i: " + i)
         if (o.prlead) {
-/*
-          svg.append("text")
-            .attr("class", "community_label")
-            .attr("x", o.x)
-            .attr("y", o.y)
-            .text(topics[o.community])
-            .style("fill", d3.rgb(o.color))
-            .style("text-decoration", "underline")  
+          svg.append("rect")
+            .attr("class", "community_label label_back")
+            .attr("height", "20px")
+            .attr("width", (10 + topics[o.community].length * 7.5) + "px")
+            .attr("rx", 10)
+            .attr("ry", 10)
             .attr("community", o.community)
             .attr("node", i)
-*/
+            .style("fill", "grey")
+            .style("opacity", 0.75)
           svg.append("text")
-            .attr("class", "community_label")
-            .attr("x", o.x)
-            .attr("y", o.y)
+            .attr("class", "community_label label_text")
             .attr("text-anchor", "middle")
             .style("fill", "white")
             .text(topics[o.community])
