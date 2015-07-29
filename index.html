@@ -164,7 +164,7 @@
     d3.selectAll(".label_back")
       .transition()
       .duration(tmilli)
-      .style("opacity", 0.75)
+      .style("opacity", 0.8)
   }
 
   function fromgeo() {
@@ -402,12 +402,14 @@
             .attr("ry", 10)
             .attr("community", o.community)
             .attr("node", i)
-            .style("fill", "grey")
-            .style("opacity", 0.75)
+            //.style("fill", "#000")
+            .style("fill", d3.rgb(o.color))
+            .style("opacity", 0.8)
           svg.append("text")
             .attr("class", "community_label label_text")
             .attr("text-anchor", "middle")
             .style("fill", "white")
+            //.style("fill", d3.rgb(o.color).brighter())
             .text(topics[o.community])
             .attr("community", o.community)
             .attr("node", i)
