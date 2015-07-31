@@ -37,7 +37,7 @@ function arcme(A, B, curve) {
 
 function labelize(nodes, trans) {
   if (typeof nodes === "undefined") {
-    d3.selectAll(".community_label")
+    d3.selectAll(".community_label_group")
       .transition()
       .duration(tmilli)
       .style("opacity", 0)
@@ -61,6 +61,7 @@ function labelize(nodes, trans) {
     })
     return ret
   }
+  // translate the group instead of moving each piece
   var roids = centroids(nodes)
   d3.selectAll(".label_back")
     .attr("x", function(){

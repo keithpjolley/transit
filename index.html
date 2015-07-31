@@ -190,13 +190,13 @@
 
     var commlab = svg.selectAll(".comms")
       .data(graph.nodes)
-      .enter()
-      .append("g")
-      .attr("class", "community_label label_g")
+      .filter(function(d,i){return d.prlead})
       graph.nodes.forEach(function(o, i) {
         //console.log("i: " + i)
         if (o.prlead) {
-          svg.append("rect")
+          var xxx = svg.append("g")
+            .attr("class", "banana")
+          xxx.append("rect")
             .attr("class", "community_label label_back")
             .attr("height", "20px")
             .attr("width", (10 + topics[o.community].length * 7.5) + "px")
@@ -207,7 +207,7 @@
             //.style("fill", "#000")
             .style("fill", d3.rgb(o.color))
             .style("opacity", 0.8)
-          svg.append("text")
+          xxx.append("text")
             .attr("class", "community_label label_text")
             .attr("text-anchor", "middle")
             .style("fill", "white")
