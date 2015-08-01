@@ -63,22 +63,13 @@ function labelize(nodes, trans) {
     return
   }
   var roids = centroids(nodes)
-/*
-  d3.selectAll(".label_back")
-    .attr("x", function(){
-      return roids[this.attributes.community.value + ".x"]-parseInt(this.attributes.width.value)/2+"px"})
-    .attr("y", function(){
-      return roids[this.attributes.community.value + ".y"]-parseInt(this.attributes.height.value)+5+"px"})
-  d3.selectAll(".label_text")
-    .attr("x", function(){return roids[this.attributes.community.value + ".x"]+"px"})
-    .attr("y", function(){return roids[this.attributes.community.value + ".y"]+"px"})
-*/
   d3.selectAll(".label_group")
     .attr("transform", function(o,i){
         return "translate(" + roids[this.attributes.community.value + ".x"]
         +               "," + roids[this.attributes.community.value + ".y"]
         + ")"
     })
+    .attr("opacity", 1)
   return
 }
 
@@ -110,7 +101,8 @@ function toscatter() {
   labelize()
 }
 
-function toforce() {
+function toforce(dynamic) {
+  dynamic ? force.start() : force.stop()
   d3.selectAll(".node")
     .transition()
     .duration(tmilli)
@@ -121,6 +113,7 @@ function toforce() {
     .transition()
     .duration(tmilli)
     .attr("d", function(d) { return arcme(d.source, d.target, 0) })
+    .style("stroke-opacity", 0.25)
 // there's something that keeps this from working correctly when a curve is added
 //  d3.selectAll(".link")
 //    .transition()
@@ -131,16 +124,11 @@ function toforce() {
 //kjlink      .attr("y1", function(d){return(d.source.y)})
 //kjlink      .attr("x2", function(d){return(d.target.x)})
 //kjlink      .attr("y2", function(d){return(d.target.y)})
-    .style("stroke-opacity", 0.25)
-  labelize(graph.nodes, "force")
-  d3.selectAll(".label_text")
+  d3.selectAll(".community_label")
     .transition()
     .duration(tmilli)
     .style("opacity", 1)
-  d3.selectAll(".label_back")
-    .transition()
-    .duration(tmilli)
-    .style("opacity", 0.8)
+  labelize(graph.nodes, "force")
 }
 
 // hide the map and whatnot
@@ -171,7 +159,7 @@ function togeo() {
     .attr("cx", function(d){cx=projection([d.location.lon, d.location.lat])[0]; return cx})
     .attr("cy", function(d){cy=projection([d.location.lon, d.location.lat])[1]; return cy})
     .attr("fixed", true)
-    .style("opacity", 0.5)
+    .style("opacity", 0.75)
   d3.selectAll(".link")
     .transition()
     .duration(tmilli)
@@ -184,7 +172,7 @@ function togeo() {
 //kjlink      .attr("y1", function(d){y1=projection([d.source.location.lon, d.source.location.lat])[1]; return y1})
 //kjlink      .attr("x2", function(d){x2=projection([d.target.location.lon, d.target.location.lat])[0]; return x2})
 //kjlink      .attr("y2", function(d){y2=projection([d.target.location.lon, d.target.location.lat])[1]; return y2})
-    .style("stroke-opacity", 0.5)
+    .style("stroke-opacity", 0.75)
   labelize()
 }
 

@@ -42,8 +42,10 @@
       .projection(projection)
 
   var graticule = d3.geo.graticule()
+  var landgeo = svg.append("g")
+        .attr("class", "obnoxious_amounts_of_data_for_the_geo_map")
 
-  svg.append("path")
+  landgeo.append("path")
       .datum(graticule)
       .attr("class", "graticule geo")
       .attr("d", path)
@@ -51,15 +53,14 @@
 
   d3.json("../include/js/d3/topo/world-50m.json", function(error, world) {
     if (error) throw error
-
-    svg.insert("path", ".graticule")
+    landgeo.insert("path", ".graticule")
         .datum(topojson.feature(world, world.objects.land))
         .attr("class", "land geo")
         .attr("d", path)
         .style("opacity", 0)
 
-    svg.insert("path", ".graticule")
-        .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b }))
+    landgeo.insert("path", ".graticule")
+        .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b}))
         .attr("class", "boundary geo")
         .attr("d", path)
         .style("opacity", 0)
@@ -156,7 +157,7 @@
 
     force = d3.layout.force()
       .gravity(0.15)
-      .charge(      function(d) { return (-d.radius*5) })
+      .charge(      function(d) { return (-d.radius*5)})
       .linkDistance(function(d) { return (
           Math.max(d.source.radius, d.target.radius)*1.5
         + Math.max(d.source.radius, d.target.radius)*2
@@ -167,30 +168,37 @@
       .links(graph.links)
       .start() // start out with a dynamic force-directed graph
 
-    var link = svg.selectAll(".link")
+    var links = svg.append("g")
+        .attr("class", "links_class")
+    var link = links.selectAll(".link")
       .data(graph.links)
       .enter()
       .append("path")
       .attr("class", "link")
-      .style("stroke",         function(d){return d3.rgb(d.source.color) })
-      //.style("stroke-width",   function(d){return d.width })
-      .style("stroke-width",   1)
+      .style("stroke",         function(d){return d3.rgb(d.source.color)})
+      .style("stroke-width",   function(d){return d.width})
+      //.style("stroke-width",   1)
       .style("stroke-opacity", 0.25)
       .style("fill", "none")
 
-    var node = svg.selectAll(".node")
+    var nodes = svg.append("g")
+      .attr("class", "nodes_class")
+    var node = nodes.selectAll(".node")
       .data(graph.nodes)
       .enter()
       .append("circle")
-      .attr("class", function(d){return "node" + (d.prlead ? " lead" : (d.isperson==1 ? "" : " maillist")) })
-      .attr("r",     function(d){return d.radius })
-      .style("fill", function(d){return d.prlead ? d3.rgb(d.color).darker(2) : d3.rgb(d.color) })
+      .attr("class", function(d){return "node" + (d.prlead ? " lead" : (d.isperson==1 ? "" : " maillist"))})
+      .attr("r",     function(d){return d.radius})
+      //.style("fill", function(d){return d.prlead ? d3.rgb(d.color).darker(2) : d3.rgb(d.color)})
+      .style("fill", function(d){return d3.rgb(d.color)})
       .style("stroke-width", function(d){return Math.max(d.radius/10,1)})
       .call(force.drag)
-
-    var commlab = svg.selectAll(".comms")
+    
+    var commlab = svg.append("g")
+      .attr("class", "community_label")
       .data(graph.nodes)
       .filter(function(d,i){return d.prlead})
+
       graph.nodes.forEach(function(o, i) {
         //console.log("i: " + i)
         if (o.prlead) {
@@ -198,33 +206,46 @@
             .attr("class", "community_label label_group")
             .attr("id",    "label_group_" + o.community)
             .attr("community", o.community) // hide this info in here
-          labels.append("rect")
-            .attr("class", "community_label label_back")
-            .attr("id", "label_back_" + o.community)
-            .attr("height", "20px")
-            .attr("width", (10 + topics[o.community].length * 7.5) + "px")
-            .attr("rx", 10)
-            .attr("ry", 10)
-            .attr("community", o.community)
-            .attr("node", i)
-            //.style("fill", "#000")
-            .style("fill", d3.rgb(o.color))
-            .style("opacity", 0.8)
-          labels.append("text")
+
+          // create them in the order i want them drawn
+          var rect = labels.append("g")
+          var text = labels.append("g")
+          
+          // but define the text first so i know how wide to draw the rect
+          text.append("text")
             .attr("class", "community_label label_text")
             .attr("id", "label_text_" + o.community)
             .attr("text-anchor", "middle")
             .style("fill", "white")
             //.style("fill", d3.rgb(o.color).brighter())
-            .text(topics[o.community])
+            .html("&nbsp;&nbsp;" + topics[o.community] + "&nbsp;&nbsp;") // pad the label on the sides a bit
             .attr("community", o.community)
             .attr("node", i)
-        }
+
+          // get the bounding box of the just created but not yet drawn text
+          var bbox = text.node().getBBox()
+
+          rect.append("rect")
+            .attr("class", "community_label label_back")
+            .attr("id", "label_back_" + o.community)
+            .attr("x", bbox.x)
+            .attr("y", bbox.y)
+            .attr("width",  bbox.width)
+            .attr("height", bbox.height)
+            .attr("rx", 10)
+            .attr("ry", 10)
+            .attr("community", o.community)
+            .attr("node", i)
+            //.style("fill", "#000")
+            .style("fill", d3.rgb(o.color).darker())
+            .style("opacity", 0.8)
+      }
     })
 
     force.on("tick", function (e) {
       var q = d3.geom.quadtree(graph.nodes)
-      var k = e.alpha/20
+      var alphanator = graph.nodes.length/3+260
+      var k = e.alpha/(alphanator<1 ? 1 : alphanator)
       graph.nodes.forEach(function(node) {
         var leader = myLeaders[node.community + ""]
         if (node !== leader) {
@@ -236,24 +257,22 @@
 
       link
       /*kjlink
-        .attr("x1", function(d){ return d.source.x })
-        .attr("y1", function(d){ return d.source.y })
-        .attr("x2", function(d){ return d.target.x })
-        .attr("y2", function(d){ return d.target.y })
+        .attr("x1", function(d){ return d.source.x})
+        .attr("y1", function(d){ return d.source.y})
+        .attr("x2", function(d){ return d.target.x})
+        .attr("y2", function(d){ return d.target.y})
       */
-        .attr("d", function(d) { return arcme(d.source, d.target, 0) })
+        .attr("d", function(d) { return arcme(d.source, d.target, 0)})
 
       node
-        .attr("cx", function(d){ return d.x })
-        .attr("cy", function(d){ return d.y })
+        .attr("cx", function(d){ return d.x})
+        .attr("cy", function(d){ return d.y})
 
       labelize(graph.nodes, "force")
     })
 
     var lastbutton = ""
-
     d3.selectAll("#radbut input[name=mode]").on("change", function() {
-      var d = new Date()
       var button = this.value
       // get the current position of each node
       // should do this for each link too
@@ -261,7 +280,6 @@
         .attr("__dummy__", function(d) {d.x_old = d.x; d.y_old = d.y; return})
       if (lastbutton == "geo")     fromgeo()
       if (lastbutton == "scatter") fromscatter()
-      button === "force-dynamic" ? force.start() : force.stop()
       switch (button) {
         case "force-dynamic":
           toforce(true)
@@ -280,9 +298,8 @@
           break
       }
       lastbutton = button
-    })
-
   })
+})
 
 </script>
 

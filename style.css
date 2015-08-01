@@ -73,7 +73,10 @@ body {
 }
 
 .land {
-  fill: #a42;
+  /* fill: #DEB887; /* burlywood */
+  /* fill: DarkGoldenRod; /* */
+  /* fill: DimGray; /* */
+  fill: #596959; /* */
 }
 
 .boundary {
