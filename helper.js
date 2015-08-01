@@ -35,34 +35,35 @@ function arcme(A, B, curve) {
          "Z"
 }
 
+function centroids(nodes, trans) {
+  var m   = []
+  myComms.forEach(function(o, i) {
+    m[o + ".x"] = new Array()
+    m[o + ".y"] = new Array()
+  })
+  nodes.forEach(function(o, i) {
+    var thiscommunity = o.community + ""
+    m[thiscommunity + ".x"].push(trans === "scatter" ? xMap(o.x) : o.x)
+    m[thiscommunity + ".y"].push(trans === "scatter" ? yMap(o.y) : o.y)
+  })
+  var ret = []
+  myComms.forEach(function(o, i) {
+    ret[o + ".x"] = d3.mean(m[o + ".x"])
+    ret[o + ".y"] = d3.mean(m[o + ".y"])
+  })
+  return ret
+}
+
 function labelize(nodes, trans) {
   if (typeof nodes === "undefined") {
-    d3.selectAll(".community_label_group")
+    d3.selectAll(".community_label")
       .transition()
       .duration(tmilli)
       .style("opacity", 0)
     return
   }
-  function centroids(nodes, trans) {
-    var m   = []
-    myComms.forEach(function(o, i) {
-      m[o + ".x"] = new Array()
-      m[o + ".y"] = new Array()
-    })
-    nodes.forEach(function(o, i) {
-      var thiscommunity = o.community + ""
-      m[thiscommunity + ".x"].push(trans === "scatter" ? xMap(o.x) : o.x)
-      m[thiscommunity + ".y"].push(trans === "scatter" ? yMap(o.y) : o.y)
-    })
-    var ret = []
-    myComms.forEach(function(o, i) {
-      ret[o + ".x"] = d3.mean(m[o + ".x"])
-      ret[o + ".y"] = d3.mean(m[o + ".y"])
-    })
-    return ret
-  }
-  // translate the group instead of moving each piece
   var roids = centroids(nodes)
+/*
   d3.selectAll(".label_back")
     .attr("x", function(){
       return roids[this.attributes.community.value + ".x"]-parseInt(this.attributes.width.value)/2+"px"})
@@ -71,6 +72,13 @@ function labelize(nodes, trans) {
   d3.selectAll(".label_text")
     .attr("x", function(){return roids[this.attributes.community.value + ".x"]+"px"})
     .attr("y", function(){return roids[this.attributes.community.value + ".y"]+"px"})
+*/
+  d3.selectAll(".label_group")
+    .attr("transform", function(o,i){
+        return "translate(" + roids[this.attributes.community.value + ".x"]
+        +               "," + roids[this.attributes.community.value + ".y"]
+        + ")"
+    })
   return
 }
 

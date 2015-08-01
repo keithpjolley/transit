@@ -194,10 +194,13 @@
       graph.nodes.forEach(function(o, i) {
         //console.log("i: " + i)
         if (o.prlead) {
-          var xxx = svg.append("g")
-            .attr("class", "banana")
-          xxx.append("rect")
+          var labels = svg.append("g")
+            .attr("class", "community_label label_group")
+            .attr("id",    "label_group_" + o.community)
+            .attr("community", o.community) // hide this info in here
+          labels.append("rect")
             .attr("class", "community_label label_back")
+            .attr("id", "label_back_" + o.community)
             .attr("height", "20px")
             .attr("width", (10 + topics[o.community].length * 7.5) + "px")
             .attr("rx", 10)
@@ -207,8 +210,9 @@
             //.style("fill", "#000")
             .style("fill", d3.rgb(o.color))
             .style("opacity", 0.8)
-          xxx.append("text")
+          labels.append("text")
             .attr("class", "community_label label_text")
+            .attr("id", "label_text_" + o.community)
             .attr("text-anchor", "middle")
             .style("fill", "white")
             //.style("fill", d3.rgb(o.color).brighter())
