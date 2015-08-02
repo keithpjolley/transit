@@ -4,10 +4,8 @@ var twopi  = Math.PI*2
 Math.notsorandom = function(max, min) {
     max = max || 1;
     min = min || 0;
- 
     Math.seed = (Math.seed * 9301 + 49297) % 233280;
     var rnd = Math.seed / 233280;
- 
     return min + rnd * (max - min);
 }
 
@@ -35,11 +33,11 @@ function arcme(A, B, curve) {
          "Z"
 }
 
-function centroids(nodes, trans) {
+function getcentroids(nodes, trans) {
   var m   = []
   myComms.forEach(function(o, i) {
-    m[o + ".x"] = new Array()
-    m[o + ".y"] = new Array()
+    m[o + ".x"] = []
+    m[o + ".y"] = []
   })
   nodes.forEach(function(o, i) {
     var thiscommunity = o.community + ""
@@ -54,26 +52,41 @@ function centroids(nodes, trans) {
   return ret
 }
 
-function labelize(nodes, trans) {
-  if (typeof nodes === "undefined") {
-    d3.selectAll(".community_label")
-      .transition()
-      .duration(tmilli)
-      .style("opacity", 0)
-    return
-  }
-  var roids = centroids(nodes)
+function movelabels(nodes) {
+  // for some strange reason the nodes will not move if there's a ".transition|.delay" with "static"
+  // it doesn't need it with "force dynamic" but would look better if it did have it on moves to static.
+  // not sure why. :/
+  var centroids = getcentroids(nodes)
   d3.selectAll(".label_group")
     .attr("transform", function(o,i){
-        return "translate(" + roids[this.attributes.community.value + ".x"]
-        +               "," + roids[this.attributes.community.value + ".y"]
-        + ")"
-    })
-    .attr("opacity", 1)
+          return "translate(" + centroids[this.attributes.community.value + ".x"]
+          +               "," + centroids[this.attributes.community.value + ".y"]
+          + ")"
+  })
+}
+
+function labelize(nodes, button) {
+  // "force-dynamic":
+  // "force-static":
+  // "scatter":
+  // "geo"
+  if (button == "force-dynamic" || button == "force-static") {
+    movelabels(nodes)
+  } else {
+    d3.selectAll(".label_group")
+      .transition()
+      .duration(tmilli)
+      .attr("transform", function(o,i){
+          return "translate(" + (width + margin.left + 18 + this.attributes.w.value/2)
+          +               "," + (100 + i*(this.attributes.h.value/1 + 10))
+          + ")"
+      })
+  }
   return
 }
 
-function toscatter() {
+function toscatter(button) {
+  labelize(graph.nodes, button)
   d3.selectAll(".scatter")
     .transition()
     .duration(tmilli)
@@ -89,6 +102,7 @@ function toscatter() {
   d3.selectAll(".link")
     .transition()
     .duration(tmilli)
+    .style("opacity", 0.85)
     .attr("d", function(d) { 
       var s = {x: xMap(d.source), y: yMap(d.source)}
       var t = {x: xMap(d.target), y: yMap(d.target)}
@@ -98,11 +112,10 @@ function toscatter() {
     //kjlink .attr("x2", function(d){return(xMap(d.target))})
     //kjlink .attr("y2", function(d){return(yMap(d.target))})
     //kjlink .style("stroke-opacity", 0.125)
-  labelize()
 }
 
-function toforce(dynamic) {
-  dynamic ? force.start() : force.stop()
+function toforce(button) {
+  labelize(graph.nodes, button)
   d3.selectAll(".node")
     .transition()
     .duration(tmilli)
@@ -128,27 +141,11 @@ function toforce(dynamic) {
     .transition()
     .duration(tmilli)
     .style("opacity", 1)
-  labelize(graph.nodes, "force")
-}
-
-// hide the map and whatnot
-function fromgeo() {
-  d3.selectAll(".geo")
-    .transition()
-    .duration(tmilli)
-    .style("opacity", 0)
-}
-
-// hide the axis and whatnot
-function fromscatter() {
-  d3.selectAll(".scatter")
-    .transition()
-    .duration(tmilli)
-    .style("opacity", 0)
 }
 
 // show the map and whatnot
-function togeo() {
+function togeo(button){
+  labelize(graph.nodes, button)
   d3.selectAll(".geo")
     .transition()
     .duration(tmilli)
@@ -168,12 +165,27 @@ function togeo() {
         var t = projection([d.target.location.lon, d.target.location.lat])
         return arcme({x: s[0], y: s[1], index: d.source.index}, {x: t[0], y: t[1], index: d.target.index}, 1)
     })
+    .style("stroke-opacity", 0.75)
 //kjlink      .attr("x1", function(d){x1=projection([d.source.location.lon, d.source.location.lat])[0]; return x1})
 //kjlink      .attr("y1", function(d){y1=projection([d.source.location.lon, d.source.location.lat])[1]; return y1})
 //kjlink      .attr("x2", function(d){x2=projection([d.target.location.lon, d.target.location.lat])[0]; return x2})
 //kjlink      .attr("y2", function(d){y2=projection([d.target.location.lon, d.target.location.lat])[1]; return y2})
-    .style("stroke-opacity", 0.75)
-  labelize()
+}
+
+// hide the map and whatnot
+function fromgeo() {
+  d3.selectAll(".geo")
+    .transition()
+    .duration(tmilli)
+    .style("opacity", 0)
+}
+
+// hide the axis and whatnot
+function fromscatter() {
+  d3.selectAll(".scatter")
+    .transition()
+    .duration(tmilli)
+    .style("opacity", 0)
 }
 
 // https://github.com/mbostock/d3/blob/gh-pages/talk/20111018/collision.html#L76-101

@@ -1,24 +1,28 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <link rel="STYLESHEET" type="text/css" href="./style.css" />
-<head> <title>playground 37</title> </head>
+<head>
+  <title>playground 37</title>
+  <script type="text/javascript" src="../include/js/d3/d3.v3.min.js"></script>
+  <script type="text/javascript" src="../include/js/d3/topo/topojson.v1.min.js"></script>
+  <script type="text/javascript" src="./helper.js"></script><!-- put js functions in this file -->
+</head>
 <body>
 
-<div id="radbut">
-  <input type="radio" name="mode" value="force-dynamic" id="rb-f-d" checked><label for="rb-f-d" >Force (dynamic)</label><br>
-  <input type="radio" name="mode" value="force-static"  id="rb-f-s"        ><label for="rb-f-s" >Force (static)</label><br>
-  <input type="radio" name="mode" value="scatter"       id="rb-scat"       ><label for="rb-scat">Scatter</label><br>
-  <input type="radio" name="mode" value="geo"           id="rb-geo"        ><label for="rb-geo" >GeoMap</label>
+<div class="superdiv">
+  <div class="mysvg"></div>
+  <div class="radiobuttons">
+    <input type="radio" name="mode" value="force-dynamic" id="rb-fd" checked><label for="rb-fd">Force (dynamic)</label><br>
+    <input type="radio" name="mode" value="force-static"  id="rb-fs"        ><label for="rb-fs">Force (static)</label><br>
+    <input type="radio" name="mode" value="scatter"       id="rb-sp"        ><label for="rb-sp">Scatter</label><br>
+    <input type="radio" name="mode" value="geo"           id="rb-go"        ><label for="rb-go">GeoMap</label>
+  </div>
 </div>
-<div class="container" id="mysvg"></div>
 
-<script type="text/javascript" src="../include/js/d3/d3.v3.min.js"></script>
-<script type="text/javascript" src="../include/js/d3/topo/topojson.v1.min.js"></script>
-<script type="text/javascript" src="./helper.js"></script><!-- put js functions in this file -->
 <script type="text/javascript">
 
-  var margin = {"top": 40, "right": 40, "bottom": 40, "left": 40},
-      width  = 800 - margin.left - margin.right,
+  var margin = {"top": 20, "right": 200, "bottom": 20, "left": 30},
+      width  = 900 - margin.left - margin.right,
       height = 500 - margin.top - margin.bottom,
       tmilli = 1000 // number of millis transitions take
 
@@ -27,42 +31,40 @@
   var nComms
   var force
 
-  var svg = d3.select("#mysvg").append("svg")
+  var svg = d3.select(".mysvg").append("svg")
           .attr("width",  width  + margin.left + margin.right)
           .attr("height", height + margin.top  + margin.bottom)
         .append("g")
           .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 
-  var projection = d3.geo.equirectangular()
-      .scale(153)
-      .translate([width / 2, height / 2])
-      .precision(.1)
-
-  var path = d3.geo.path()
+  var graticule  = d3.geo.graticule()
+  var projection = d3.geo.equirectangular() //.mercator()
+      .scale((width+margin.left)/2/Math.PI)
+      .translate([margin.left + width / 2, -margin.top + height / 2])
+  var mapdata = svg.append("g")
+      .attr("class", "obnoxious_amounts_of_data_for_the_geo_map")
+  var landgeo = d3.geo.path()
       .projection(projection)
-
-  var graticule = d3.geo.graticule()
-  var landgeo = svg.append("g")
-        .attr("class", "obnoxious_amounts_of_data_for_the_geo_map")
-
-  landgeo.append("path")
-      .datum(graticule)
-      .attr("class", "graticule geo")
-      .attr("d", path)
-      .style("opacity", 0)
 
   d3.json("../include/js/d3/topo/world-50m.json", function(error, world) {
     if (error) throw error
-    landgeo.insert("path", ".graticule")
-        .datum(topojson.feature(world, world.objects.land))
-        .attr("class", "land geo")
-        .attr("d", path)
+
+    mapdata.append("path")
+        .datum(graticule)
+        .attr("class", "graticule geo")
+        .attr("d", landgeo)
         .style("opacity", 0)
 
-    landgeo.insert("path", ".graticule")
+    mapdata.insert("path", ".graticule")
+        .datum(topojson.feature(world, world.objects.land))
+        .attr("class", "land geo")
+        .attr("d", landgeo)
+        .style("opacity", 0)
+
+    mapdata.insert("path", ".graticule")
         .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b}))
         .attr("class", "boundary geo")
-        .attr("d", path)
+        .attr("d", landgeo)
         .style("opacity", 0)
   })
 
@@ -207,7 +209,7 @@
             .attr("id",    "label_group_" + o.community)
             .attr("community", o.community) // hide this info in here
 
-          // create them in the order i want them drawn
+          // create them in the order i want them drawn. looks odd in the debugger but works out well
           var rect = labels.append("g")
           var text = labels.append("g")
           
@@ -217,10 +219,8 @@
             .attr("id", "label_text_" + o.community)
             .attr("text-anchor", "middle")
             .style("fill", "white")
-            //.style("fill", d3.rgb(o.color).brighter())
             .html("&nbsp;&nbsp;" + topics[o.community] + "&nbsp;&nbsp;") // pad the label on the sides a bit
             .attr("community", o.community)
-            .attr("node", i)
 
           // get the bounding box of the just created but not yet drawn text
           var bbox = text.node().getBBox()
@@ -235,10 +235,11 @@
             .attr("rx", 10)
             .attr("ry", 10)
             .attr("community", o.community)
-            .attr("node", i)
-            //.style("fill", "#000")
             .style("fill", d3.rgb(o.color).darker())
             .style("opacity", 0.8)
+        labels
+          .attr("w", bbox.width)
+          .attr("h", bbox.height)
       }
     })
 
@@ -256,50 +257,48 @@
       })
 
       link
-      /*kjlink
-        .attr("x1", function(d){ return d.source.x})
-        .attr("y1", function(d){ return d.source.y})
-        .attr("x2", function(d){ return d.target.x})
-        .attr("y2", function(d){ return d.target.y})
-      */
+      //kjlink
+      //.attr("x1", function(d){ return d.source.x})
+      //.attr("y1", function(d){ return d.source.y})
+      //.attr("x2", function(d){ return d.target.x})
+      //.attr("y2", function(d){ return d.target.y})
+      //
         .attr("d", function(d) { return arcme(d.source, d.target, 0)})
 
       node
         .attr("cx", function(d){ return d.x})
         .attr("cy", function(d){ return d.y})
 
-      labelize(graph.nodes, "force")
+      movelabels(graph.nodes)
     })
 
     var lastbutton = ""
-    d3.selectAll("#radbut input[name=mode]").on("change", function() {
-      var button = this.value
+    d3.selectAll(".radiobuttons input[name=mode]").on("change", function() {
       // get the current position of each node
-      // should do this for each link too
       d3.selectAll(".node")
-        .attr("__dummy__", function(d) {d.x_old = d.x; d.y_old = d.y; return})
+        .attr("__dummy__", function(d){d.x_old = d.x; d.y_old = d.y; return})
+      var button = this.value
       if (lastbutton == "geo")     fromgeo()
       if (lastbutton == "scatter") fromscatter()
+      force.stop()
       switch (button) {
+        default:
         case "force-dynamic":
-          toforce(true)
-          break
+          force.start() // allow to fall through to get to "toforce()"
         case "force-static":
-          toforce(false)
+          toforce(button)
           break
         case "scatter":
-          toscatter()
+          toscatter(button)
           break
         case "geo":
-          togeo()
-          break
-        default:
-          toforce(true)
+          togeo(button)
           break
       }
       lastbutton = button
   })
 })
+/**/
 
 </script>
 

@@ -6,6 +6,11 @@
 
 */
 
+body {
+  background-color: black;
+  color: white;
+}
+
 .axis path,
 .axis line {
   fill: none;
@@ -25,26 +30,28 @@
 .axis.label {
   color: white;
   fill: white;
-  font-size: medium;
+  font-size: small;
 }
 
-body {
-  background-color: black;
-  color: white;
-}
-
-#mysvg {
-  background-color: black;
+.mysvg {
+  /*background-color: #222; */
+  background-color: none;
   position: absolute;
   top: 10px;
-  padding: 40px;
+  padding: 0px;
 }
 
-#radbut {
+.radiobuttons {
   position: relative;
-  right: -800px;
-  padding: 40px;
+  width: 200px;
+  /*background-color: #111;*/
+  background-color: none;
+  right: -745px;
+  padding: 10px 0px;
   z-index: 1;
+}
+
+.superdiv {
 }
 
 .node.maillist {
