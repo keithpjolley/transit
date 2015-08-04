@@ -17,5 +17,5 @@ an exercise to show how to transition between multiple d3 coordinate systems, in
 
 ### todo
 - [x] create this document
-- [ ] insert community legends
+- [x] insert community legends
 - [ ] document code
