@@ -123,6 +123,8 @@
     var ymin = d3.min(graph.nodes, yValue)
     var ymax = d3.max(graph.nodes, yValue)
 
+    var colorscale = d3.scale.category10()
+
     xScale.domain([xmin, xmax])
     yScale.domain([ymin, ymax])
 
@@ -177,7 +179,7 @@
       .enter()
       .append("path")
       .attr("class", "link")
-      .style("stroke",         function(d){return d3.rgb(d.source.color)})
+      .style("stroke",         function(d){return d.source.color ? d3.rgb(d.source.color) : colorscale(d.source.community)})
       .style("stroke-width",   function(d){return d.width})
       //.style("stroke-width",   1)
       .style("stroke-opacity", 0.25)
@@ -191,8 +193,11 @@
       .append("circle")
       .attr("class", function(d){return "node" + (d.prlead ? " lead" : (d.isperson==1 ? "" : " maillist"))})
       .attr("r",     function(d){return d.radius})
-      //.style("fill", function(d){return d.prlead ? d3.rgb(d.color).darker(2) : d3.rgb(d.color)})
-      .style("fill", function(d){return d3.rgb(d.color)})
+      .style("fill", function(d){
+        console.log("color: " + d.color)
+        //return d3.rgb(d.color)
+        return d.color ? d3.rgb(d.color) : colorscale(d.community)
+      })
       .style("stroke-width", function(d){return Math.max(d.radius/10,1)})
       .call(force.drag)
     
@@ -235,7 +240,7 @@
             .attr("rx", 10)
             .attr("ry", 10)
             .attr("community", o.community)
-            .style("fill", d3.rgb(o.color).darker())
+            .style("fill", d3.rgb(o.color ? o.color : colorscale(o.community)).darker())
             .style("opacity", 0.8)
         labels
           .attr("w", bbox.width)
