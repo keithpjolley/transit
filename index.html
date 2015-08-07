@@ -195,7 +195,7 @@
       .attr("class", function(d){return "node" + (d.prlead ? " lead" : (d.isperson==1 ? "" : " maillist"))})
       .attr("r",     function(d){return d.radius})
       .style("fill", function(d){
-        console.log("color: " + d.color)
+        //console.log("color: " + d.color)
         //return d3.rgb(d.color)
         return d.color ? d3.rgb(d.color) : colorscale(d.community)
       })
