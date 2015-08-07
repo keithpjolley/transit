@@ -97,7 +97,12 @@
       "watch group"
   ]
 
-  d3.json("./data2.json", function(error, json) {
+  //default to using the smaller dataset
+  var inputjson = "./data.small.json"
+  //use the big dataset by using url ".../index.html?data=big"
+  if (getQueryVariable("data") === "big"){ inputjson = "./data2.json" }
+    
+  d3.json(inputjson, function(error, json) {
     if (error) return console.warn(error)
 
     graph = json
